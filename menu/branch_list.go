@@ -20,25 +20,39 @@ func singleBranchItem(branch string) MenuItem {
 	}
 }
 
-func branches(r *git.Repo) []MenuItem {
-	branches, err := r.GetInactiveBranchList()
-
-	if err != nil {
-		return []MenuItem{GitErrorMenu(err)}
+func branchFetch(all []MenuItem) func(offset int) []MenuItem {
+	return func(offset int) []MenuItem {
+		if offset >= len(all) {
+			return nil
+		}
+		end := offset + logPageSize
+		if end > len(all) {
+			end = len(all)
+		}
+		return all[offset:end]
 	}
-
-	items := []MenuItem{}
-
-	for _, branch := range branches {
-		items = append(items, singleBranchItem(branch))
-	}
-
-	return items
 }
 
 func BranchListMenu(r *git.Repo) MenuItem {
 	return MenuItem{
-		Label:   "Checkout",
-		Submenu: branches,
+		Label: "Checkout",
+		LevelSubmenu: func(r *git.Repo) MenuLevel {
+			names, err := r.GetInactiveBranchList()
+			if err != nil {
+				return MenuLevel{Items: []MenuItem{GitErrorMenu(err)}}
+			}
+
+			all := make([]MenuItem, len(names))
+			for i, name := range names {
+				all[i] = singleBranchItem(name)
+			}
+
+			fetch := branchFetch(all)
+			level := MenuLevel{Items: fetch(0), Cursor: 0}
+			if len(all) > logPageSize {
+				level.Scroll = &ScrollState{Offset: 0, Fetch: fetch}
+			}
+			return level
+		},
 	}
 }
