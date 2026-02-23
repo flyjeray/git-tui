@@ -135,9 +135,27 @@ func (m Model) updateMenu(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.stack = menu.GetStartMenu(m.repo)
 		}
 	case "up", "k":
-		m.stack[last].MoveUp()
+		level := &m.stack[last]
+		if level.Cursor == 0 && level.Scroll != nil && level.Scroll.Offset > 0 {
+			newOffset := level.Scroll.Offset - 1
+			if items := level.Scroll.Fetch(newOffset); len(items) > 0 {
+				level.Items = items
+				level.Scroll.Offset = newOffset
+			}
+		} else {
+			level.MoveUp()
+		}
 	case "down", "j":
-		m.stack[last].MoveDown()
+		level := &m.stack[last]
+		if level.Cursor == len(level.Items)-1 && level.Scroll != nil {
+			newOffset := level.Scroll.Offset + 1
+			if items := level.Scroll.Fetch(newOffset); len(items) == len(level.Items) {
+				level.Items = items
+				level.Scroll.Offset = newOffset
+			}
+		} else {
+			level.MoveDown()
+		}
 	case "enter":
 		m = m.activateItem(m.stack[last].Selected())
 	}
@@ -147,6 +165,8 @@ func (m Model) updateMenu(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m Model) activateItem(item menu.MenuItem) Model {
 	switch {
+	case item.LevelSubmenu != nil:
+		m.stack = append(m.stack, item.LevelSubmenu(m.repo))
 	case item.Submenu != nil:
 		m.stack = append(m.stack, menu.MenuLevel{Items: item.Submenu(m.repo)})
 	case m.repo == nil:

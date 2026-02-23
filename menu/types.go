@@ -3,19 +3,28 @@ package menu
 import git "git-tui/git-ops"
 
 // MenuItem is one entry in a navigable menu.
-// Exactly one of Submenu, Result, Confirm, or Flow should be set.
+// Exactly one of Submenu, LevelSubmenu, Result, Confirm, or Flow should be set.
 type MenuItem struct {
-	Label   string
-	Submenu func(*git.Repo) []MenuItem // non-nil = push a new menu level
-	Result  func(*git.Repo) string     // non-nil = show immediate result string
-	Confirm *ConfirmPrompt             // non-nil = show yes/no prompt
-	Flow    func(*git.Repo) *InputFlow // non-nil = show multi-step input form
+	Label        string
+	Submenu      func(*git.Repo) []MenuItem // non-nil = push a new menu level
+	LevelSubmenu func(*git.Repo) MenuLevel  // non-nil = push a pre-built menu level (supports scroll)
+	Result       func(*git.Repo) string     // non-nil = show immediate result string
+	Confirm      *ConfirmPrompt             // non-nil = show yes/no prompt
+	Flow         func(*git.Repo) *InputFlow // non-nil = show multi-step input form
+}
+
+// ScrollState enables a MenuLevel to shift its items one-by-one when
+// the cursor is at a boundary, giving an infinite-scroll effect.
+type ScrollState struct {
+	Offset int
+	Fetch  func(offset int) []MenuItem
 }
 
 // MenuLevel is one frame in the navigation stack.
 type MenuLevel struct {
 	Items  []MenuItem
 	Cursor int
+	Scroll *ScrollState // non-nil = level supports scrolling
 }
 
 func (l *MenuLevel) MoveUp() {

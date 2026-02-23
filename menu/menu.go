@@ -20,6 +20,7 @@ func rootMenu(r *git.Repo) []MenuItem {
 		PushMenuItem(r),
 		BranchMenuItem,
 		RemotesMenuItem(r),
+		LogMenuItem,
 	}
 }
 
