@@ -21,6 +21,7 @@ func rootMenu(r *git.Repo) []MenuItem {
 		BranchRootMenu,
 		RemotesMenuItem,
 		LogMenuItem,
+		CustomCommandMenuItem,
 	}
 }
 
