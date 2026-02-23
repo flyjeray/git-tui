@@ -40,7 +40,7 @@ func (m Model) View() string {
 		}
 		var line string
 		switch {
-		case m.repo == nil && item.Submenu == nil:
+		case m.repo == nil:
 			line = "  " + styled.Dim(label)
 		case i == top.Cursor:
 			line = styled.Selected("> " + label)

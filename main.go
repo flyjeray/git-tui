@@ -21,7 +21,7 @@ func main() {
 	}
 
 	repo, repoErr := git.Find(cwd)
-	var repoWarning string
+	var repoWarning string = ""
 	if repoErr != nil {
 		repoWarning = "not a git repository"
 	}

@@ -168,7 +168,9 @@ func (m Model) updateMenu(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			level.MoveDown()
 		}
 	case "enter":
-		m = m.activateItem(m.stack[last].Selected())
+		if m.repoWarning == "" {
+			m = m.activateItem(m.stack[last].Selected())
+		}
 	}
 
 	return m, nil
