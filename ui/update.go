@@ -105,6 +105,7 @@ func (m Model) updateInput(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "esc":
 		m.input = nil
+		m.stack = menu.GetStartMenu(m.repo)
 	case "enter":
 		if flow.IsLast() {
 			m.result = flow.OnSubmit(m.repo, flow.CollectValues())
@@ -131,7 +132,7 @@ func (m Model) updateMenu(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "esc":
 		if last > 0 {
-			m.stack = m.stack[:last]
+			m.stack = menu.GetStartMenu(m.repo)
 		}
 	case "up", "k":
 		m.stack[last].MoveUp()

@@ -5,6 +5,16 @@ import styled "git-tui/styles"
 func (m Model) View() string {
 	const sep = "──────────────────────────────────────────────"
 
+	// Menu view
+	var titleText string
+	if m.repoWarning != "" {
+		titleText = styled.Title("git-tui") + "  " + styled.Warn("⚠ not a git repository")
+	} else {
+		titleText = styled.Title("git-tui") + "  " + styled.Success("✓ git detected")
+	}
+
+	header := titleText + "\n" + styled.Hint(sep) + "\n\n"
+
 	switch {
 	case m.loading:
 		frame := spinnerFrames[m.spinnerFrame]
@@ -14,16 +24,8 @@ func (m Model) View() string {
 	case m.confirm != nil:
 		return m.renderConfirm() + "\n"
 	case m.result != "":
-		content := m.result + "\n\n" + styled.Hint("esc: back  q: quit")
+		content := header + m.result + "\n\n" + styled.Hint("esc: back  q: quit")
 		return styled.Box(content) + "\n"
-	}
-
-	// Menu view
-	var titleText string
-	if m.repoWarning != "" {
-		titleText = styled.Title("git-tui") + "  " + styled.Warn("⚠ not a git repository")
-	} else {
-		titleText = styled.Title("git-tui") + "  " + styled.Success("✓ git detected")
 	}
 
 	top := m.top()
@@ -52,7 +54,7 @@ func (m Model) View() string {
 		footerHint = "↑↓ / jk: navigate  enter: select  q: quit"
 	}
 
-	content := titleText + "\n" + styled.Hint(sep) + "\n\n" + menuLines + "\n" + styled.Hint(footerHint)
+	content := header + menuLines + "\n" + styled.Hint(footerHint)
 	return styled.Box(content) + "\n"
 }
 
