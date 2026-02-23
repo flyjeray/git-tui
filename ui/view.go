@@ -23,6 +23,9 @@ func (m Model) View() string {
 		return m.renderInput(sep) + "\n"
 	case m.confirm != nil:
 		return m.renderConfirm() + "\n"
+	case m.info != "":
+		content := header + m.info + "\n\n" + styled.Hint("esc: back  q: quit")
+		return styled.Box(content) + "\n"
 	case m.result != "":
 		content := header + m.result + "\n\n" + styled.Hint("esc: back  q: quit")
 		return styled.Box(content) + "\n"

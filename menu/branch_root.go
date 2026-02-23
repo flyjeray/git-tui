@@ -7,7 +7,7 @@ import (
 
 var BranchMenuItem = MenuItem{
 	Label: "Branch",
-	Result: func(r *git.Repo) string {
+	Info: func(r *git.Repo) string {
 		branch, err := r.GetCurrentBranch()
 		if err != nil {
 			return styled.Warn("error: " + err.Error())

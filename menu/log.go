@@ -21,8 +21,8 @@ func logFetch(r *git.Repo) func(offset int) []MenuItem {
 		for _, e := range entries {
 			e := e
 			items = append(items, MenuItem{
-				Label:  fmt.Sprintf("%s - %s (by %s)", e.Hash, e.Subject, e.Author),
-				Result: func(_ *git.Repo) string { return styled.Hint(e.Hash) },
+				Label: fmt.Sprintf("%s - %s (by %s)", e.Hash, e.Subject, e.Author),
+				Info:  func(_ *git.Repo) string { return styled.Hint(e.Hash) },
 			})
 		}
 		return items

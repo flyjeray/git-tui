@@ -22,6 +22,6 @@ func getRemotes(r *git.Repo) string {
 }
 
 var RemotesListItem = MenuItem{
-	Label:  "List",
-	Result: getRemotes,
+	Label: "List",
+	Info:  getRemotes,
 }

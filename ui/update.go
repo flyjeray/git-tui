@@ -60,9 +60,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateConfirm(key)
 	case m.result != "":
 		return m.updateResult(key)
+	case m.info != "":
+		return m.updateInfo(key)
 	default:
 		return m.updateMenu(key)
 	}
+}
+
+func (m Model) updateInfo(key tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch key.String() {
+	case "ctrl+c", "q":
+		return m, tea.Quit
+	case "esc":
+		m.info = ""
+	}
+	return m, nil
 }
 
 func (m Model) updateResult(key tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -105,7 +117,6 @@ func (m Model) updateInput(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "esc":
 		m.input = nil
-		m.stack = menu.GetStartMenu(m.repo)
 	case "enter":
 		if flow.IsLast() {
 			m.result = flow.OnSubmit(m.repo, flow.CollectValues())
@@ -132,7 +143,7 @@ func (m Model) updateMenu(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "esc":
 		if last > 0 {
-			m.stack = menu.GetStartMenu(m.repo)
+			m.stack = m.stack[:last]
 		}
 	case "up", "k":
 		level := &m.stack[last]
@@ -171,6 +182,8 @@ func (m Model) activateItem(item menu.MenuItem) Model {
 		m.stack = append(m.stack, menu.MenuLevel{Items: item.Submenu(m.repo)})
 	case m.repo == nil:
 		m.result = styled.Warn("⚠ not in a git repository")
+	case item.Info != nil:
+		m.info = item.Info(m.repo)
 	case item.Result != nil:
 		m.result = item.Result(m.repo)
 	case item.Confirm != nil:

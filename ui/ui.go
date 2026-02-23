@@ -15,6 +15,7 @@ type Model struct {
 	repoWarning  string
 	stack        []menu.MenuLevel    // navigation stack; top = current menu
 	result       string              // non-empty = result view
+	info         string              // non-empty = info view (safe as result but leaving it does not reset app)
 	confirm      *menu.ConfirmPrompt // non-nil = confirmation view
 	input        *menu.InputFlow     // non-nil = input form view
 	loading      bool                // true while an async operation is running

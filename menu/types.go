@@ -9,6 +9,7 @@ type MenuItem struct {
 	Submenu      func(*git.Repo) []MenuItem // non-nil = push a new menu level
 	LevelSubmenu func(*git.Repo) MenuLevel  // non-nil = push a pre-built menu level (supports scroll)
 	Result       func(*git.Repo) string     // non-nil = show immediate result string
+	Info         func(*git.Repo) string     // non-nil = show immediate info string (leaving will not reset app)
 	Confirm      *ConfirmPrompt             // non-nil = show yes/no prompt
 	Flow         func(*git.Repo) *InputFlow // non-nil = show multi-step input form
 }
