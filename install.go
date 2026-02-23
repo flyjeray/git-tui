@@ -27,10 +27,16 @@ func selfInstall() {
 		return
 	}
 
-	// Already running from the install location — nothing to do
-	installResolved, err := filepath.EvalSymlinks(installPath)
-	if err == nil && installResolved == execPath {
-		return
+	// Already running from the install location — nothing to do.
+	// Use os.SameFile (inode comparison) instead of string comparison so that
+	// hard links and any path-normalisation differences are handled correctly.
+	execInfo, execStatErr := os.Lstat(execPath)
+	if execStatErr == nil {
+		if installInfo, err := os.Lstat(installPath); err == nil {
+			if os.SameFile(execInfo, installInfo) {
+				return
+			}
+		}
 	}
 
 	// 0755: rwxr-xr-x — owner can write, everyone can read/execute
@@ -38,7 +44,18 @@ func selfInstall() {
 		return
 	}
 
-	if err := copyBinary(execPath, installPath); err != nil {
+	// Write to a temp file first, then atomically rename into place.
+	// A direct O_TRUNC open on the install path would truncate the file before
+	// writing; if that path is currently executing, macOS sends SIGKILL.
+	// os.Rename replaces the directory entry without touching the old inode,
+	// so any running process mapped from the old file is unaffected.
+	tmpPath := installPath + ".tmp"
+	if err := copyBinary(execPath, tmpPath); err != nil {
+		os.Remove(tmpPath)
+		return
+	}
+	if err := os.Rename(tmpPath, installPath); err != nil {
+		os.Remove(tmpPath)
 		return
 	}
 
