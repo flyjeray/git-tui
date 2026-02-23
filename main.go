@@ -5,7 +5,8 @@ import (
 	"os"
 
 	git "git-tui/git-ops"
-	gitui "git-tui/ui"
+	styles "git-tui/styles"
+	ui "git-tui/ui"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -15,7 +16,7 @@ func main() {
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Println(gitui.WarnStyle.Render("⚠ could not determine working directory: " + err.Error()))
+		fmt.Println(styles.WarnStyle.Render("⚠ could not determine working directory: " + err.Error()))
 		os.Exit(1)
 	}
 
@@ -25,7 +26,7 @@ func main() {
 		repoWarning = "not a git repository"
 	}
 
-	p := tea.NewProgram(gitui.InitialModel(repo, repoWarning))
+	p := tea.NewProgram(ui.InitialModel(repo, repoWarning))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v\n", err)
 		os.Exit(1)

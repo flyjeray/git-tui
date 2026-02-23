@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
+	styles "git-tui/styles"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
-
-	gitui "git-tui/ui"
 )
 
 func selfInstall() {
@@ -44,14 +43,14 @@ func selfInstall() {
 	}
 
 	if err := ensureInPath(home, installDir); err != nil {
-		fmt.Println(gitui.WarnStyle.Render("⚠ installed, but could not update PATH in shell RC: " + err.Error()))
-		fmt.Println(gitui.HintStyle.Render("  Add this manually: export PATH=\"" + installDir + ":$PATH\""))
+		fmt.Println(styles.WarnStyle.Render("⚠ installed, but could not update PATH in shell RC: " + err.Error()))
+		fmt.Println(styles.HintStyle.Render("  Add this manually: export PATH=\"" + installDir + ":$PATH\""))
 		fmt.Println()
 		return
 	}
 
-	fmt.Println(gitui.SuccessStyle.Render("✓ git-tui installed to " + installPath))
-	fmt.Println(gitui.HintStyle.Render("  Restart your terminal and call \"gt\" command to use it from anywhere."))
+	fmt.Println(styles.SuccessStyle.Render("✓ git-tui installed to " + installPath))
+	fmt.Println(styles.HintStyle.Render("  Restart your terminal and call \"gt\" command to use it from anywhere."))
 	fmt.Println()
 }
 
