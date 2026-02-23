@@ -18,8 +18,8 @@ func rootMenu(r *git.Repo) []MenuItem {
 		PullMenuItem(r),
 		CommitMenuItem(r),
 		PushMenuItem(r),
-		BranchMenuItem,
-		RemotesMenuItem(r),
+		BranchRootMenu,
+		RemotesMenuItem,
 		LogMenuItem,
 	}
 }
