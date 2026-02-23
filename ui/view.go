@@ -15,22 +15,32 @@ func (m Model) View() string {
 		titleText = TitleStyle.Render("git-tui") + "  " + SuccessStyle.Render("✓ git detected")
 	}
 
+	top := m.top()
 	var menuLines string
-	for i, item := range menuItems {
+	for i, item := range top.items {
+		label := item.Label
+		if item.Children != nil {
+			label += " ›"
+		}
 		var line string
 		switch {
-		case m.repo == nil:
-			line = "  " + DimStyle.Render(item)
-		case i == m.cursor:
-			line = SelectedStyle.Render("> " + item)
+		case m.repo == nil && item.Action != nil:
+			line = "  " + DimStyle.Render(label)
+		case i == top.cursor:
+			line = SelectedStyle.Render("> " + label)
 		default:
-			line = "  " + item
+			line = "  " + label
 		}
 		menuLines += line + "\n"
 	}
 
-	footer := HintStyle.Render("↑↓ / jk: navigate  enter: select  q: quit")
+	var footerHint string
+	if len(m.stack) > 1 {
+		footerHint = "↑↓ / jk: navigate  enter: select  esc: back  q: quit"
+	} else {
+		footerHint = "↑↓ / jk: navigate  enter: select  q: quit"
+	}
 
-	content := titleText + "\n" + HintStyle.Render(sep) + "\n\n" + menuLines + "\n" + footer
+	content := titleText + "\n" + HintStyle.Render(sep) + "\n\n" + menuLines + "\n" + HintStyle.Render(footerHint)
 	return BoxStyle.Render(content) + "\n"
 }

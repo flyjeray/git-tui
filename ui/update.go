@@ -1,10 +1,6 @@
 package ui
 
-import (
-	"strings"
-
-	tea "github.com/charmbracelet/bubbletea"
-)
+import tea "github.com/charmbracelet/bubbletea"
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	key, ok := msg.(tea.KeyMsg)
@@ -12,52 +8,41 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	last := len(m.stack) - 1
+
 	switch key.String() {
 	case "ctrl+c", "q":
 		return m, tea.Quit
 	case "esc":
-		m.result = ""
+		if m.result != "" {
+			m.result = ""
+		} else if last > 0 {
+			m.stack = m.stack[:last]
+		}
 	case "up", "k":
-		if m.result == "" && m.cursor > 0 {
-			m.cursor--
+		if m.result == "" && m.stack[last].cursor > 0 {
+			m.stack[last].cursor--
 		}
 	case "down", "j":
-		if m.result == "" && m.cursor < len(menuItems)-1 {
-			m.cursor++
+		if m.result == "" && m.stack[last].cursor < len(m.stack[last].items)-1 {
+			m.stack[last].cursor++
 		}
 	case "enter":
-		if m.result == "" {
-			m.result = m.runSelected()
+		if m.result != "" {
+			break
+		}
+		item := m.stack[last].items[m.stack[last].cursor]
+		switch {
+		case item.Children != nil:
+			m.stack = append(m.stack, menuLevel{items: item.Children})
+		case item.Action != nil:
+			if m.repo == nil {
+				m.result = WarnStyle.Render("⚠ not in a git repository")
+			} else {
+				m.result = item.Action(m.repo)
+			}
 		}
 	}
 
 	return m, nil
-}
-
-func (m Model) runSelected() string {
-	if m.repo == nil {
-		return WarnStyle.Render("⚠ not in a git repository")
-	}
-	switch m.cursor {
-	case 0:
-		branch, err := m.repo.Branch()
-		if err != nil {
-			return WarnStyle.Render("error: " + err.Error())
-		}
-		return "Current branch: " + HintStyle.Render(branch)
-	case 1:
-		remotes, err := m.repo.Remotes()
-		if err != nil {
-			return WarnStyle.Render("error: " + err.Error())
-		}
-		if len(remotes) == 0 {
-			return HintStyle.Render("no remotes configured")
-		}
-		lines := make([]string, len(remotes))
-		for i, r := range remotes {
-			lines[i] = HintStyle.Render(r)
-		}
-		return "Remotes:\n" + strings.Join(lines, "\n")
-	}
-	return ""
 }
