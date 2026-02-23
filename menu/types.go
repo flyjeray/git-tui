@@ -2,20 +2,14 @@ package menu
 
 import git "git-tui/git-ops"
 
-// Operation is returned by Activate to tell the model what to show next.
-type Operation struct {
-	Title         string
-	ConfirmPrompt *ConfirmPrompt
-	Flow          *InputFlow
-}
-
 // MenuItem is one entry in a navigable menu.
-// Set exactly one of: Activate (leaf), Children (static submenu), Dynamic (runtime submenu).
+// Exactly one of Submenu, Result, Confirm, or Flow should be set.
 type MenuItem struct {
-	Label     string
-	Operation func(*git.Repo) Operation  // leaf: returns what to show next
-	Children  []MenuItem                 // static submenu
-	Submenu   func(*git.Repo) []MenuItem // runtime-built submenu (e.g. list of remotes)
+	Label   string
+	Submenu func(*git.Repo) []MenuItem // non-nil = push a new menu level
+	Result  func(*git.Repo) string     // non-nil = show immediate result string
+	Confirm *ConfirmPrompt             // non-nil = show yes/no prompt
+	Flow    func(*git.Repo) *InputFlow // non-nil = show multi-step input form
 }
 
 // MenuLevel is one frame in the navigation stack.
@@ -24,32 +18,54 @@ type MenuLevel struct {
 	Cursor int
 }
 
-// non-nil ConfirmPrompt triggers a yes/no prompt
+func (l *MenuLevel) MoveUp() {
+	if l.Cursor > 0 {
+		l.Cursor--
+	}
+}
+func (l *MenuLevel) MoveDown() {
+	if l.Cursor < len(l.Items)-1 {
+		l.Cursor++
+	}
+}
+func (l MenuLevel) Selected() MenuItem { return l.Items[l.Cursor] }
+
+// ConfirmPrompt triggers a yes/no dialog.
 type ConfirmPrompt struct {
 	Prompt string
 	OnYes  func(*git.Repo) string
 }
 
-// SelectOption is one choice in a select-style input step.
-type selectOption struct {
-	Value string // submitted to onSubmit
-	Label string // human-readable description
+// InputStep is one text field in a multi-step input form.
+type InputStep struct {
+	Label string
+	Hint  string // shown dimmed below the active field
+	Value string // accumulated text
 }
 
-// InputStep is one field in a multi-step input form.
-// If options is non-nil the step renders as a navigable select; otherwise as a text field.
-type inputStep struct {
-	Label   string
-	Hint    string         // shown dimmed below an active text field
-	Value   string         // accumulated text, or selected option value
-	Options []selectOption // non-nil = select mode
-	Cursor  int            // active cursor within options
+func (s *InputStep) AppendText(text string) { s.Value += text }
+func (s *InputStep) Backspace() {
+	if len(s.Value) > 0 {
+		s.Value = s.Value[:len(s.Value)-1]
+	}
 }
 
-// non-nil InputFlow triggers a multi-step text input form.
+// InputFlow is a multi-step text input form.
 type InputFlow struct {
 	Title    string
-	Steps    []inputStep
+	Steps    []InputStep
 	Current  int
 	OnSubmit func(r *git.Repo, values []string) string
+}
+
+func (f *InputFlow) CurrentStep() *InputStep { return &f.Steps[f.Current] }
+func (f InputFlow) IsLast() bool             { return f.Current == len(f.Steps)-1 }
+func (f *InputFlow) Advance()                { f.Current++ }
+
+func (f InputFlow) CollectValues() []string {
+	vals := make([]string, len(f.Steps))
+	for i, s := range f.Steps {
+		vals[i] = s.Value
+	}
+	return vals
 }

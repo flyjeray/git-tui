@@ -16,7 +16,7 @@ func main() {
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Println(styles.WarnStyle.Render("⚠ could not determine working directory: " + err.Error()))
+		fmt.Println(styles.Warn("⚠ could not determine working directory: " + err.Error()))
 		os.Exit(1)
 	}
 

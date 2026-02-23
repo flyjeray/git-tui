@@ -43,14 +43,14 @@ func selfInstall() {
 	}
 
 	if err := ensureInPath(home, installDir); err != nil {
-		fmt.Println(styles.WarnStyle.Render("⚠ installed, but could not update PATH in shell RC: " + err.Error()))
-		fmt.Println(styles.HintStyle.Render("  Add this manually: export PATH=\"" + installDir + ":$PATH\""))
+		fmt.Println(styles.Warn("⚠ installed, but could not update PATH in shell RC: " + err.Error()))
+		fmt.Println(styles.Hint("  Add this manually: export PATH=\"" + installDir + ":$PATH\""))
 		fmt.Println()
 		return
 	}
 
-	fmt.Println(styles.SuccessStyle.Render("✓ git-tui installed to " + installPath))
-	fmt.Println(styles.HintStyle.Render("  Restart your terminal and call \"gt\" command to use it from anywhere."))
+	fmt.Println(styles.Success("✓ git-tui installed to " + installPath))
+	fmt.Println(styles.Hint("  Restart your terminal and call \"gt\" command to use it from anywhere."))
 	fmt.Println()
 }
 

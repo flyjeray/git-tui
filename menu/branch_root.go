@@ -2,16 +2,16 @@ package menu
 
 import (
 	git "git-tui/git-ops"
-	styles "git-tui/styles"
+	styled "git-tui/styles"
 )
 
 var BranchMenuItem = MenuItem{
 	Label: "Branch",
-	Operation: func(r *git.Repo) Operation {
+	Result: func(r *git.Repo) string {
 		branch, err := r.GetCurrentBranch()
 		if err != nil {
-			return Operation{Title: styles.WarnStyle.Render("error: " + err.Error())}
+			return styled.Warn("error: " + err.Error())
 		}
-		return Operation{Title: "Current branch: " + styles.HintStyle.Render(branch)}
+		return "Current branch: " + styled.Hint(branch)
 	},
 }
