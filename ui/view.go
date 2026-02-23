@@ -6,6 +6,9 @@ func (m Model) View() string {
 	const sep = "──────────────────────────────────────────────"
 
 	switch {
+	case m.loading:
+		frame := spinnerFrames[m.spinnerFrame]
+		return styled.Box(frame+" working...") + "\n"
 	case m.input != nil:
 		return m.renderInput(sep) + "\n"
 	case m.confirm != nil:

@@ -7,21 +7,25 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var spinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+
 // Model holds the state for the main TUI.
 type Model struct {
-	repo        *git.Repo
-	repoWarning string
-	stack       []menu.MenuLevel    // navigation stack; top = current menu
-	result      string              // non-empty = result view
-	confirm     *menu.ConfirmPrompt // non-nil = confirmation view
-	input       *menu.InputFlow     // non-nil = input form view
+	repo         *git.Repo
+	repoWarning  string
+	stack        []menu.MenuLevel    // navigation stack; top = current menu
+	result       string              // non-empty = result view
+	confirm      *menu.ConfirmPrompt // non-nil = confirmation view
+	input        *menu.InputFlow     // non-nil = input form view
+	loading      bool                // true while an async operation is running
+	spinnerFrame int
 }
 
 func InitialModel(repo *git.Repo, repoWarning string) Model {
 	return Model{
 		repo:        repo,
 		repoWarning: repoWarning,
-		stack:       menu.StartMenu,
+		stack:       menu.GetStartMenu(repo),
 	}
 }
 
