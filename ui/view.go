@@ -41,6 +41,9 @@ func (m Model) View() string {
 
 	top := m.top()
 	var sb strings.Builder
+	if len(m.stack) > 1 {
+		sb.WriteString(styled.Title(m.stack[len(m.stack)-2].Selected().Label) + "\n\n")
+	}
 	for i, item := range top.Items {
 		label := item.DisplayLabel()
 		switch {
