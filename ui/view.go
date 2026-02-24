@@ -9,41 +9,55 @@ import (
 const sep = "──────────────────────────────────────────────"
 
 func (m Model) View() string {
+	return styled.Box(m.renderHeader()+m.renderBody()) + "\n"
+}
 
-	// Menu view
-	var titleText string
-	if m.repoWarning != "" {
-		titleText = styled.Title("git-tui") + "  " + styled.Warn("⚠ not a git repository")
+func (m Model) renderHeader() string {
+	var title string
+	var subtitle string
+	length := len(m.stack)
+	if length > 1 {
+		for i := range m.stack[:length-1] {
+			title += m.stack[i].Selected().Label
+			if i < length-2 {
+				title += " > "
+			}
+		}
 	} else {
-		titleText = styled.Title("git-tui") + "  " + styled.Success("✓ git detected")
+		title = "git-tui"
+		if m.repoWarning != "" {
+			subtitle = "  " + styled.Warn("⚠ not a git repository")
+		} else {
+			subtitle = "  " + styled.Success("✓ git detected")
+		}
 	}
 
-	header := titleText + "\n" + styled.Hint(sep) + "\n\n"
+	return styled.Title(title) + subtitle + "\n" + styled.Hint(sep) + "\n\n"
+}
 
+func (m Model) renderBody() string {
 	switch {
 	case m.loading:
 		frame := spinnerFrames[m.spinnerFrame]
-		return styled.Box(frame+" working...") + "\n"
+		return frame + " working..."
 	case m.input != nil:
-		return m.renderInput() + "\n"
+		return m.renderInput()
 	case m.confirm != nil:
-		return m.renderConfirm() + "\n"
+		return m.renderConfirm()
 	case m.result != "" || m.info != "":
-		text := ""
-		if m.result != "" {
-			text = m.result
-		} else {
+		text := m.result
+		if text == "" {
 			text = m.info
 		}
-		content := header + text + "\n\n" + styled.Hint("esc: back  q: quit")
-		return styled.Box(content) + "\n"
+		return text + "\n\n" + styled.Hint("esc: back  q: quit")
+	default:
+		return m.renderMenu()
 	}
+}
 
+func (m Model) renderMenu() string {
 	top := m.top()
 	var sb strings.Builder
-	if len(m.stack) > 1 {
-		sb.WriteString(styled.Title(m.stack[len(m.stack)-2].Selected().Label) + "\n\n")
-	}
 	for i, item := range top.Items {
 		label := item.DisplayLabel()
 		switch {
@@ -55,7 +69,6 @@ func (m Model) View() string {
 			sb.WriteString("  " + label + "\n")
 		}
 	}
-	menuLines := sb.String()
 
 	var footerHint string
 	if len(m.stack) > 1 {
@@ -64,8 +77,7 @@ func (m Model) View() string {
 		footerHint = "↑↓ / jk: navigate  enter: select  q: quit"
 	}
 
-	content := header + menuLines + "\n" + styled.Hint(footerHint)
-	return styled.Box(content) + "\n"
+	return sb.String() + "\n" + styled.Hint(footerHint)
 }
 
 func (m Model) renderInput() string {
@@ -74,33 +86,26 @@ func (m Model) renderInput() string {
 	for i, step := range flow.Steps {
 		switch {
 		case i < flow.Current:
-			// Completed: show label + value (dimmed)
 			sb.WriteString(styled.Hint(step.Label+": "+step.Value) + "\n")
 		case i == flow.Current:
-			// Active: show label + accumulated value + cursor
 			hint := ""
 			if step.Hint != "" {
 				hint = "\n  " + styled.Dim(step.Hint)
 			}
 			sb.WriteString(step.Label + ": " + step.Value + "_" + hint + "\n")
 		default:
-			// Upcoming: label only, dimmed
 			sb.WriteString(styled.Dim(step.Label+":") + "\n")
 		}
 	}
-	lines := sb.String()
 
 	footerVerb := "next"
 	if flow.IsLast() {
 		footerVerb = "submit"
 	}
-	footer := styled.Hint("esc: cancel  enter: " + footerVerb)
 
-	content := styled.Title(flow.Title) + "\n" + styled.Hint(sep) + "\n\n" + lines + "\n" + footer
-	return styled.Box(content)
+	return sb.String() + "\n" + styled.Hint("esc: cancel  enter:"+footerVerb)
 }
 
 func (m Model) renderConfirm() string {
-	content := styled.Warn("⚠ "+m.confirm.Prompt) + "\n\n" + styled.Hint("y: confirm  n / esc: cancel")
-	return styled.Box(content)
+	return styled.Warn("⚠ "+m.confirm.Prompt) + "\n\n" + styled.Hint("y: confirm  n / esc: cancel")
 }
