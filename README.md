@@ -8,7 +8,7 @@ A keyboard-driven terminal UI for common git operations.
 go run .
 ```
 
-On first run the binary installs itself to `~/.local/bin/gt` and adds the directory to your shell `PATH`. Restart the terminal, then use `gt` from any directory.
+On first run the binary installs itself and adds the directory to your shell `PATH`. Restart the terminal, then use `gt` from any directory.
 
 ## Usage
 
@@ -30,7 +30,9 @@ Run `gt` inside a git repository. Navigate with arrow keys or `j`/`k`, confirm w
 
 ```
 main.go            entry point; starts the bubbletea program
-install.go         self-install logic (~/.local/bin/gt)
+install.go         wrapper for self-install logic
+install_unix.go    unix-specific self-install logic (~/.local/bin/gt)
+install_windows.go windows-self-install logic (AppData\Local\Programs\gt)
 
 git-ops/           thin wrappers around git CLI commands
   repo.go          Repo type and Find()
