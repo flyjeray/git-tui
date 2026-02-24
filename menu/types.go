@@ -2,6 +2,13 @@ package menu
 
 import git "git-tui/git-ops"
 
+func (i MenuItem) DisplayLabel() string {
+	if i.Submenu != nil || i.LevelSubmenu != nil {
+		return i.Label + " ›"
+	}
+	return i.Label
+}
+
 // MenuItem is one entry in a navigable menu.
 // Exactly one of Submenu, LevelSubmenu, Result, Confirm, or Flow should be set.
 type MenuItem struct {
@@ -39,6 +46,30 @@ func (l *MenuLevel) MoveDown() {
 	}
 }
 func (l MenuLevel) Selected() MenuItem { return l.Items[l.Cursor] }
+
+func (l *MenuLevel) ScrollUp() {
+	if l.Cursor == 0 && l.Scroll != nil && l.Scroll.Offset > 0 {
+		newOffset := l.Scroll.Offset - 1
+		if items := l.Scroll.Fetch(newOffset); len(items) > 0 {
+			l.Items = items
+			l.Scroll.Offset = newOffset
+		}
+	} else {
+		l.MoveUp()
+	}
+}
+
+func (l *MenuLevel) ScrollDown() {
+	if l.Cursor == len(l.Items)-1 && l.Scroll != nil {
+		newOffset := l.Scroll.Offset + 1
+		if items := l.Scroll.Fetch(newOffset); len(items) == len(l.Items) {
+			l.Items = items
+			l.Scroll.Offset = newOffset
+		}
+	} else {
+		l.MoveDown()
+	}
+}
 
 // ConfirmPrompt triggers a yes/no dialog.
 type ConfirmPrompt struct {

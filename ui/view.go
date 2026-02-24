@@ -1,9 +1,14 @@
 package ui
 
-import styled "git-tui/styles"
+import (
+	"strings"
+
+	styled "git-tui/styles"
+)
+
+const sep = "──────────────────────────────────────────────"
 
 func (m Model) View() string {
-	const sep = "──────────────────────────────────────────────"
 
 	// Menu view
 	var titleText string
@@ -20,35 +25,34 @@ func (m Model) View() string {
 		frame := spinnerFrames[m.spinnerFrame]
 		return styled.Box(frame+" working...") + "\n"
 	case m.input != nil:
-		return m.renderInput(sep) + "\n"
+		return m.renderInput() + "\n"
 	case m.confirm != nil:
 		return m.renderConfirm() + "\n"
-	case m.info != "":
-		content := header + m.info + "\n\n" + styled.Hint("esc: back  q: quit")
-		return styled.Box(content) + "\n"
-	case m.result != "":
-		content := header + m.result + "\n\n" + styled.Hint("esc: back  q: quit")
+	case m.result != "" || m.info != "":
+		text := ""
+		if m.result != "" {
+			text = m.result
+		} else {
+			text = m.info
+		}
+		content := header + text + "\n\n" + styled.Hint("esc: back  q: quit")
 		return styled.Box(content) + "\n"
 	}
 
 	top := m.top()
-	var menuLines string
+	var sb strings.Builder
 	for i, item := range top.Items {
-		label := item.Label
-		if item.Submenu != nil {
-			label += " ›"
-		}
-		var line string
+		label := item.DisplayLabel()
 		switch {
 		case m.repo == nil:
-			line = "  " + styled.Dim(label)
+			sb.WriteString("  " + styled.Dim(label) + "\n")
 		case i == top.Cursor:
-			line = styled.Selected("> " + label)
+			sb.WriteString(styled.Selected("> "+label) + "\n")
 		default:
-			line = "  " + label
+			sb.WriteString("  " + label + "\n")
 		}
-		menuLines += line + "\n"
 	}
+	menuLines := sb.String()
 
 	var footerHint string
 	if len(m.stack) > 1 {
@@ -61,26 +65,27 @@ func (m Model) View() string {
 	return styled.Box(content) + "\n"
 }
 
-func (m Model) renderInput(sep string) string {
+func (m Model) renderInput() string {
 	flow := m.input
-	var lines string
+	var sb strings.Builder
 	for i, step := range flow.Steps {
 		switch {
 		case i < flow.Current:
 			// Completed: show label + value (dimmed)
-			lines += styled.Hint(step.Label+": "+step.Value) + "\n"
+			sb.WriteString(styled.Hint(step.Label+": "+step.Value) + "\n")
 		case i == flow.Current:
 			// Active: show label + accumulated value + cursor
 			hint := ""
 			if step.Hint != "" {
 				hint = "\n  " + styled.Dim(step.Hint)
 			}
-			lines += step.Label + ": " + step.Value + "_" + hint + "\n"
+			sb.WriteString(step.Label + ": " + step.Value + "_" + hint + "\n")
 		default:
 			// Upcoming: label only, dimmed
-			lines += styled.Dim(step.Label+":") + "\n"
+			sb.WriteString(styled.Dim(step.Label+":") + "\n")
 		}
 	}
+	lines := sb.String()
 
 	footerVerb := "next"
 	if flow.IsLast() {

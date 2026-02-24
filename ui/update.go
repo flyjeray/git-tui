@@ -58,32 +58,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateInput(key)
 	case m.confirm != nil:
 		return m.updateConfirm(key)
-	case m.result != "":
-		return m.updateResult(key)
-	case m.info != "":
-		return m.updateInfo(key)
+	case m.result != "" || m.info != "":
+		return m.updateTextView(key)
 	default:
 		return m.updateMenu(key)
 	}
 }
 
-func (m Model) updateInfo(key tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) updateTextView(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch key.String() {
 	case "ctrl+c", "q":
 		return m, tea.Quit
 	case "esc":
+		if m.result != "" {
+			m.stack = menu.GetStartMenu(m.repo)
+			m.result = ""
+		}
 		m.info = ""
-	}
-	return m, nil
-}
-
-func (m Model) updateResult(key tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch key.String() {
-	case "ctrl+c", "q":
-		return m, tea.Quit
-	case "esc":
-		m.stack = menu.GetStartMenu(m.repo)
-		m.result = ""
 	}
 	return m, nil
 }
@@ -146,27 +137,9 @@ func (m Model) updateMenu(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.stack = m.stack[:last]
 		}
 	case "up", "k":
-		level := &m.stack[last]
-		if level.Cursor == 0 && level.Scroll != nil && level.Scroll.Offset > 0 {
-			newOffset := level.Scroll.Offset - 1
-			if items := level.Scroll.Fetch(newOffset); len(items) > 0 {
-				level.Items = items
-				level.Scroll.Offset = newOffset
-			}
-		} else {
-			level.MoveUp()
-		}
+		m.stack[last].ScrollUp()
 	case "down", "j":
-		level := &m.stack[last]
-		if level.Cursor == len(level.Items)-1 && level.Scroll != nil {
-			newOffset := level.Scroll.Offset + 1
-			if items := level.Scroll.Fetch(newOffset); len(items) == len(level.Items) {
-				level.Items = items
-				level.Scroll.Offset = newOffset
-			}
-		} else {
-			level.MoveDown()
-		}
+		m.stack[last].ScrollDown()
 	case "enter":
 		if m.repoWarning == "" {
 			m = m.activateItem(m.stack[last].Selected())
