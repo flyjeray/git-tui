@@ -5,7 +5,7 @@ import (
 	styled "git-tui/styles"
 )
 
-func singleBranchItem(branch string) MenuItem {
+func singleBranchListItem(branch string) MenuItem {
 	return MenuItem{
 		Label: branch,
 		Confirm: &ConfirmPrompt{
@@ -20,19 +20,6 @@ func singleBranchItem(branch string) MenuItem {
 	}
 }
 
-func branchFetch(all []MenuItem) func(offset int) []MenuItem {
-	return func(offset int) []MenuItem {
-		if offset >= len(all) {
-			return nil
-		}
-		end := offset + logPageSize
-		if end > len(all) {
-			end = len(all)
-		}
-		return all[offset:end]
-	}
-}
-
 func BranchListMenu(r *git.Repo) MenuItem {
 	return MenuItem{
 		Label: "Checkout",
@@ -44,7 +31,7 @@ func BranchListMenu(r *git.Repo) MenuItem {
 
 			all := make([]MenuItem, len(names))
 			for i, name := range names {
-				all[i] = singleBranchItem(name)
+				all[i] = singleBranchListItem(name)
 			}
 
 			fetch := branchFetch(all)

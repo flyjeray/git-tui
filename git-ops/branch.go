@@ -55,3 +55,11 @@ func (r *Repo) CheckoutToNew(branch string) (string, error) {
 	}
 	return strings.TrimSpace(string(out)), nil
 }
+
+func (r *Repo) DeleteBranch(branch string) (string, error) {
+	out, err := exec.Command("git", "branch", "-d", branch).Output()
+	if err != nil {
+		return "", fmt.Errorf("could not delete branch: %w", err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
