@@ -7,11 +7,11 @@ import (
 
 func createBranch(r *git.Repo, values []string) string {
 	name := values[0]
-	out, err := r.CheckoutToNew(name)
+	_, err := r.CheckoutToNew(name)
 	if err != nil {
 		return styled.Warn("error: " + err.Error())
 	}
-	return styled.Success("✓ " + out)
+	return styled.Success("✓ created and checked out to " + name)
 }
 
 var BranchAddItem = MenuItem{
