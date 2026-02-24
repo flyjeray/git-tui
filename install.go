@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
+	"runtime"
 )
 
 func selfInstall() {
@@ -15,8 +15,16 @@ func selfInstall() {
 		return
 	}
 
-	installDir := filepath.Join(home, ".local", "bin")
-	installPath := filepath.Join(installDir, "gt")
+	var installDir, binaryName string
+	if runtime.GOOS == "windows" {
+		installDir = filepath.Join(home, "AppData", "Local", "Programs", "gt")
+		binaryName = "gt.exe"
+	} else {
+		installDir = filepath.Join(home, ".local", "bin")
+		binaryName = "gt"
+	}
+
+	installPath := filepath.Join(installDir, binaryName)
 
 	execPath, err := os.Executable()
 	if err != nil {
@@ -60,14 +68,14 @@ func selfInstall() {
 	}
 
 	if err := ensureInPath(home, installDir); err != nil {
-		fmt.Println(styles.Warn("⚠ installed, but could not update PATH in shell RC: " + err.Error()))
-		fmt.Println(styles.Hint("  Add this manually: export PATH=\"" + installDir + ":$PATH\""))
+		fmt.Println(styles.Warn("⚠ installed, but could not update PATH: " + err.Error()))
+		fmt.Println(styles.Hint("  Add this manually: " + pathExportHint(installDir)))
 		fmt.Println()
 		return
 	}
 
 	fmt.Println(styles.Success("✓ git-tui installed to " + installPath))
-	fmt.Println(styles.Hint("  Restart your terminal and call \"gt\" command to use it from anywhere."))
+	fmt.Println(styles.Hint("  Open a new terminal and run \"gt\" to use it from anywhere."))
 	fmt.Println()
 }
 
@@ -85,39 +93,5 @@ func copyBinary(src, dst string) error {
 	defer out.Close()
 
 	_, err = io.Copy(out, in)
-	return err
-}
-
-// ensureInPath appends an export PATH line for dir to the user's shell RC file,
-// if it isn't already present. Supports zsh and bash; skips other shells silently.
-func ensureInPath(home, dir string) error {
-	// test error message to check logging
-	// return fmt.Errorf("intentional test error")
-
-	// Detect shell from $SHELL env var (e.g. /bin/zsh, /usr/bin/bash)
-	shell := os.Getenv("SHELL")
-	var rcFile string
-	switch {
-	case strings.HasSuffix(shell, "zsh"):
-		rcFile = filepath.Join(home, ".zshrc")
-	case strings.HasSuffix(shell, "bash"):
-		rcFile = filepath.Join(home, ".bashrc")
-	default:
-		return nil // unsupported shell, skip
-	}
-
-	// Avoid duplicate entries
-	data, _ := os.ReadFile(rcFile)
-	if strings.Contains(string(data), dir) {
-		return nil
-	}
-
-	f, err := os.OpenFile(rcFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = fmt.Fprintf(f, "\nexport PATH=\"%s:$PATH\"\n", dir)
 	return err
 }
