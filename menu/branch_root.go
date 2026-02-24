@@ -20,6 +20,6 @@ func branchFetch(all []MenuItem) func(offset int) []MenuItem {
 var BranchRootMenu = MenuItem{
 	Label: "Branches",
 	Submenu: func(r *git.Repo) []MenuItem {
-		return []MenuItem{BranchCurrentItem, BranchListMenu(r), BranchAddItem, BranchDeleteMenu}
+		return []MenuItem{BranchCurrentItem, BranchListMenu(r), BranchAddItem, BranchDeleteMenu, BranchMergeMenu}
 	},
 }

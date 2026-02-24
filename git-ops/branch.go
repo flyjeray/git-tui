@@ -63,3 +63,11 @@ func (r *Repo) DeleteBranch(branch string) (string, error) {
 	}
 	return strings.TrimSpace(string(out)), nil
 }
+
+func (r *Repo) MergeBranch(branch string) (string, error) {
+	out, err := exec.Command("git", "merge", branch).Output()
+	if err != nil {
+		return "", fmt.Errorf("could not merge branch: %w", err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
