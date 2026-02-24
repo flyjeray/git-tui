@@ -47,3 +47,11 @@ func (r *Repo) Checkout(branch string) (string, error) {
 	}
 	return strings.TrimSpace(string(out)), nil
 }
+
+func (r *Repo) CheckoutToNew(branch string) (string, error) {
+	out, err := exec.Command("git", "checkout", "-b", branch).Output()
+	if err != nil {
+		return "", fmt.Errorf("could not checkout: %w", err)
+	}
+	return strings.TrimSpace(string(out)), nil
+}
