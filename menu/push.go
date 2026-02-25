@@ -42,16 +42,9 @@ func multipleOriginsPush(origins []string, branch string) MenuItem {
 }
 
 func PushMenuItem(r *git.Repo) MenuItem {
-	remotes, remotesErr := r.GetRemoteNames()
-
-	if remotesErr != nil {
-		return GitErrorMenu(remotesErr)
-	}
-
-	branch, branchErr := r.GetCurrentBranch()
-
-	if branchErr != nil {
-		return GitErrorMenu(branchErr)
+	remotes, branch, err := fetchRemotesAndBranch(r)
+	if err != nil {
+		return GitErrorMenu(err)
 	}
 
 	if len(remotes) == 0 {
