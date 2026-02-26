@@ -7,7 +7,7 @@ import (
 )
 
 func (r *Repo) GetRemotesWithURLs() ([]string, error) {
-	out, err := exec.Command("git", "remote", "-v").Output()
+	out, err := exec.Command("git", "-C", r.Root, "remote", "-v").Output()
 	if err != nil {
 		return nil, fmt.Errorf("could not get remotes: %w", err)
 	}
@@ -37,7 +37,7 @@ func (r *Repo) GetRemotesWithURLs() ([]string, error) {
 }
 
 func (r *Repo) GetRemoteNames() ([]string, error) {
-	out, err := exec.Command("git", "remote").Output()
+	out, err := exec.Command("git", "-C", r.Root, "remote").Output()
 	if err != nil {
 		return nil, fmt.Errorf("could not list remotes: %w", err)
 	}
@@ -49,7 +49,7 @@ func (r *Repo) GetRemoteNames() ([]string, error) {
 }
 
 func (r *Repo) AddRemote(name, url string) error {
-	out, err := exec.Command("git", "remote", "add", name, url).CombinedOutput()
+	out, err := exec.Command("git", "-C", r.Root, "remote", "add", name, url).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s", strings.TrimSpace(string(out)))
 	}
@@ -57,7 +57,7 @@ func (r *Repo) AddRemote(name, url string) error {
 }
 
 func (r *Repo) RemoveRemote(name string) error {
-	out, err := exec.Command("git", "remote", "remove", name).CombinedOutput()
+	out, err := exec.Command("git", "-C", r.Root, "remote", "remove", name).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s", strings.TrimSpace(string(out)))
 	}

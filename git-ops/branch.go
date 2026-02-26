@@ -7,7 +7,7 @@ import (
 )
 
 func (r *Repo) GetCurrentBranch() (string, error) {
-	out, err := exec.Command("git", "branch", "--show-current").Output()
+	out, err := exec.Command("git", "-C", r.Root, "branch", "--show-current").Output()
 	if err != nil {
 		return "", fmt.Errorf("could not get branch: %w", err)
 	}
@@ -15,7 +15,7 @@ func (r *Repo) GetCurrentBranch() (string, error) {
 }
 
 func (r *Repo) GetInactiveBranchList() ([]string, error) {
-	out, err := exec.Command("git", "branch").Output()
+	out, err := exec.Command("git", "-C", r.Root, "branch").Output()
 	if err != nil {
 		return []string{}, fmt.Errorf("could not get list of branches: %w", err)
 	}
@@ -41,7 +41,7 @@ func (r *Repo) GetInactiveBranchList() ([]string, error) {
 }
 
 func (r *Repo) Checkout(branch string) (string, error) {
-	out, err := exec.Command("git", "checkout", branch).Output()
+	out, err := exec.Command("git", "-C", r.Root, "checkout", branch).Output()
 	if err != nil {
 		return "", fmt.Errorf("could not checkout: %w", err)
 	}
@@ -49,7 +49,7 @@ func (r *Repo) Checkout(branch string) (string, error) {
 }
 
 func (r *Repo) CheckoutToNew(branch string) (string, error) {
-	out, err := exec.Command("git", "checkout", "-b", branch).Output()
+	out, err := exec.Command("git", "-C", r.Root, "checkout", "-b", branch).Output()
 	if err != nil {
 		return "", fmt.Errorf("could not checkout: %w", err)
 	}
@@ -57,7 +57,7 @@ func (r *Repo) CheckoutToNew(branch string) (string, error) {
 }
 
 func (r *Repo) DeleteBranch(branch string) (string, error) {
-	out, err := exec.Command("git", "branch", "-d", branch).Output()
+	out, err := exec.Command("git", "-C", r.Root, "branch", "-d", branch).Output()
 	if err != nil {
 		return "", fmt.Errorf("could not delete branch: %w", err)
 	}
@@ -65,7 +65,7 @@ func (r *Repo) DeleteBranch(branch string) (string, error) {
 }
 
 func (r *Repo) MergeBranch(branch string) (string, error) {
-	out, err := exec.Command("git", "merge", branch).Output()
+	out, err := exec.Command("git", "-C", r.Root, "merge", branch).Output()
 	if err != nil {
 		return "", fmt.Errorf("could not merge branch: %w", err)
 	}
